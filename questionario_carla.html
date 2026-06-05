@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Questionário de Avaliação — Carla</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    color: #222;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* CAPA */
+  #capa {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #1a1a2e;
+    color: #fff;
+    padding: 40px 24px;
+    text-align: center;
+  }
+  #capa h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 12px; letter-spacing: 0.5px; }
+  #capa p { font-size: 0.95rem; color: #ccc; max-width: 500px; margin: 0 auto 8px; }
+  #capa .info-box {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 20px 28px;
+    margin: 24px 0;
+    max-width: 500px;
+    text-align: left;
+  }
+  #capa .info-box p { color: #ddd; font-size: 0.9rem; margin-bottom: 6px; }
+  #capa .info-box strong { color: #fff; }
+  .btn-start {
+    background: #4f86f7;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 14px 40px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.2s;
+  }
+  .btn-start:hover { background: #3a6fd8; }
+
+  /* PROGRESSO */
+  #progress-bar-wrap {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 5px;
+    background: #ddd;
+    z-index: 100;
+  }
+  #progress-bar { height: 5px; background: #4f86f7; transition: width 0.3s; }
+  #progress-label {
+    position: fixed;
+    top: 10px; right: 16px;
+    font-size: 0.75rem;
+    color: #888;
+    z-index: 101;
+  }
+
+  /* SEÇÕES */
+  .section {
+    display: none;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 60px 20px 80px;
+  }
+  .section.active { display: block; }
+
+  .section-header {
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+  }
+  .section-header .tag {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #aaa;
+    margin-bottom: 6px;
+  }
+  .section-header h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+  .section-header p { font-size: 0.85rem; color: #ccc; }
+
+  .instrucao {
+    background: #fff8e1;
+    border-left: 4px solid #f0a500;
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-size: 0.88rem;
+    color: #5a4000;
+    margin-bottom: 24px;
+  }
+
+  /* ITENS */
+  .item {
+    background: #fff;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .item.answered { border-color: #4f86f7; }
+  .item-num { font-size: 0.72rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .item-text { font-size: 0.95rem; color: #222; margin-bottom: 14px; }
+  .item-text em { font-style: italic; color: #555; }
+
+  /* OPÇÕES HORIZONTAIS */
+  .options-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .options-row label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    flex: 1;
+    min-width: 60px;
+  }
+  .options-row input[type=radio] { display: none; }
+  .opt-btn {
+    width: 100%;
+    padding: 8px 4px;
+    border-radius: 7px;
+    border: 1.5px solid #ddd;
+    background: #fafafa;
+    font-size: 0.75rem;
+    text-align: center;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.15s;
+    line-height: 1.3;
+  }
+  .options-row input[type=radio]:checked + .opt-btn {
+    background: #4f86f7;
+    border-color: #4f86f7;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  /* OPÇÕES VERTICAIS (WURS) */
+  .options-col { display: flex; flex-direction: column; gap: 6px; }
+  .options-col label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 7px;
+    border: 1.5px solid #ddd;
+    background: #fafafa;
+    transition: all 0.15s;
+    font-size: 0.88rem;
+    color: #444;
+  }
+  .options-col input[type=radio] { display: none; }
+  .options-col label:has(input:checked) {
+    background: #4f86f7;
+    border-color: #4f86f7;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  /* NAVEGAÇÃO */
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 32px;
+    gap: 12px;
+  }
+  .btn-nav {
+    background: #1a1a2e;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 28px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-nav:hover { background: #2d2d50; }
+  .btn-nav.secondary {
+    background: transparent;
+    color: #888;
+    border: 1.5px solid #ddd;
+  }
+  .btn-nav.secondary:hover { background: #f4f4f4; }
+  .nav-info { font-size: 0.8rem; color: #aaa; }
+
+  /* RESULTADO */
+  #resultado {
+    display: none;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 60px 20px 80px;
+  }
+  #resultado h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 6px; color: #1a1a2e; }
+  #resultado .subtitle { color: #888; font-size: 0.88rem; margin-bottom: 32px; }
+
+  .result-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-left: 5px solid #ddd;
+  }
+  .result-card.verde { border-left-color: #27ae60; }
+  .result-card.amarelo { border-left-color: #f0a500; }
+  .result-card.vermelho { border-left-color: #e74c3c; }
+
+  .result-card .rc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .result-card .rc-title { font-weight: 700; font-size: 0.95rem; color: #1a1a2e; }
+  .result-card .rc-score {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+  .result-card .rc-interp {
+    font-size: 0.82rem;
+    color: #555;
+    line-height: 1.5;
+  }
+  .rc-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 8px;
+  }
+  .verde .rc-badge { background: #d5f5e3; color: #1e8449; }
+  .amarelo .rc-badge { background: #fef9e7; color: #b7770d; }
+  .vermelho .rc-badge { background: #fde8e8; color: #c0392b; }
+
+  .result-disclaimer {
+    background: #f0f4ff;
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-size: 0.83rem;
+    color: #555;
+    margin-top: 24px;
+    line-height: 1.6;
+  }
+  .result-disclaimer strong { color: #1a1a2e; }
+
+  .btn-print {
+    background: #27ae60;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 13px 32px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 24px;
+    transition: background 0.2s;
+  }
+  .btn-print:hover { background: #1e8449; }
+
+  @media (max-width: 500px) {
+    .options-row { gap: 5px; }
+    .opt-btn { font-size: 0.68rem; padding: 7px 2px; }
+    .section { padding: 50px 14px 70px; }
+  }
+  @media print {
+    #progress-bar-wrap, #progress-label, .btn-print, .nav-row { display: none; }
+    body { background: #fff; }
+    .result-card { box-shadow: none; border: 1px solid #ddd; }
+  }
+</style>
+</head>
+<body>
+
+<!-- BARRA DE PROGRESSO -->
+<div id="progress-bar-wrap" style="display:none">
+  <div id="progress-bar" style="width:0%"></div>
+</div>
+<div id="progress-label" style="display:none"></div>
+
+<!-- CAPA -->
+<div id="capa">
+  <h1>Questionário de Avaliação</h1>
+  <p>Preparado pelo Dr. Fábio Grimaldi — para ser respondido com calma, em casa, antes da consulta.</p>
+  <div class="info-box">
+    <p><strong>O que você vai responder:</strong></p>
+    <p>🔹 ASRS — sintomas de atenção e hiperatividade (hoje)</p>
+    <p>🔹 WURS — como você era na infância</p>
+    <p>🔹 PHQ-9 — sintomas de humor nas últimas 2 semanas</p>
+    <p>🔹 GAD-7 — sintomas de ansiedade nas últimas 2 semanas</p>
+    <p style="margin-top:12px; color:#aaa; font-size:0.82rem;">⏱ Tempo estimado: 15 a 20 minutos. Não existe resposta certa ou errada — responda com o que vier primeiro, sem pensar demais.</p>
+  </div>
+  <button class="btn-start" onclick="startQuiz()">Começar ›</button>
+</div>
+
+<!-- ===================== SEÇÃO 1: ASRS PARTE A ===================== -->
+<div class="section" id="sec-asrs-a">
+  <div class="section-header">
+    <div class="tag">Escala 1 de 4 — ASRS v1.1</div>
+    <h2>Atenção e Hiperatividade — Parte A</h2>
+    <p>Como você tem se sentido <strong>nos últimos 6 meses</strong>. Responda sobre o que é habitual para você — não só nos dias ruins.</p>
+  </div>
+  <div class="instrucao">
+    Para cada situação abaixo, escolha com que frequência isso acontece com você:<br>
+    <strong>Nunca · Raramente · Às vezes · Frequentemente · Muito frequentemente</strong>
+  </div>
+
+  <!-- ASRS 1–6 (Parte A) -->
+  <div id="asrs-items-a"></div>
+
+  <div class="nav-row">
+    <span class="nav-info">Parte A — 6 perguntas</span>
+    <button class="btn-nav" onclick="nextSection('sec-asrs-a','sec-asrs-b')">Continuar ›</button>
+  </div>
+</div>
+
+<!-- ===================== SEÇÃO 2: ASRS PARTE B ===================== -->
+<div class="section" id="sec-asrs-b">
+  <div class="section-header">
+    <div class="tag">Escala 1 de 4 — ASRS v1.1</div>
+    <h2>Atenção e Hiperatividade — Parte B</h2>
+    <p>Continuação — mesma instrução da parte anterior.</p>
+  </div>
+  <div class="instrucao">
+    Com que frequência cada situação acontece com você <strong>nos últimos 6 meses</strong>?
+  </div>
+
+  <div id="asrs-items-b"></div>
+
+  <div class="nav-row">
+    <button class="btn-nav secondary" onclick="prevSection('sec-asrs-b','sec-asrs-a')">‹ Voltar</button>
+    <button class="btn-nav" onclick="nextSection('sec-asrs-b','sec-wurs')">Continuar ›</button>
+  </div>
+</div>
+
+<!-- ===================== SEÇÃO 3: WURS-25 ===================== -->
+<div class="section" id="sec-wurs">
+  <div class="section-header">
+    <div class="tag">Escala 2 de 4 — WURS-25</div>
+    <h2>Como você era quando criança</h2>
+    <p>Pense em como você era <strong>antes dos 12 anos</strong>. Responda sobre aquela época — não como você é hoje.</p>
+  </div>
+  <div class="instrucao">
+    Para cada característica abaixo, escolha o quanto ela se aplicava a você quando criança:<br>
+    <strong>Nada · Um pouco · Moderadamente · Bastante · Muito</strong>
+  </div>
+
+  <div id="wurs-items"></div>
+
+  <div class="nav-row">
+    <button class="btn-nav secondary" onclick="prevSection('sec-wurs','sec-asrs-b')">‹ Voltar</button>
+    <button class="btn-nav" onclick="nextSection('sec-wurs','sec-phq9')">Continuar ›</button>
+  </div>
+</div>
+
+<!-- ===================== SEÇÃO 4: PHQ-9 ===================== -->
+<div class="section" id="sec-phq9">
+  <div class="section-header">
+    <div class="tag">Escala 3 de 4 — PHQ-9</div>
+    <h2>Sintomas de Humor</h2>
+    <p>Nas <strong>últimas 2 semanas</strong>, com que frequência você foi incomodada por cada um dos problemas abaixo?</p>
+  </div>
+  <div class="instrucao">
+    <strong>Nenhum dia · Menos da metade dos dias · Mais da metade dos dias · Quase todos os dias</strong>
+  </div>
+
+  <div id="phq9-items"></div>
+
+  <div class="nav-row">
+    <button class="btn-nav secondary" onclick="prevSection('sec-phq9','sec-wurs')">‹ Voltar</button>
+    <button class="btn-nav" onclick="nextSection('sec-phq9','sec-gad7')">Continuar ›</button>
+  </div>
+</div>
+
+<!-- ===================== SEÇÃO 5: GAD-7 ===================== -->
+<div class="section" id="sec-gad7">
+  <div class="section-header">
+    <div class="tag">Escala 4 de 4 — GAD-7</div>
+    <h2>Sintomas de Ansiedade</h2>
+    <p>Nas <strong>últimas 2 semanas</strong>, com que frequência você foi incomodada por cada um dos problemas abaixo?</p>
+  </div>
+  <div class="instrucao">
+    <strong>Nenhum dia · Menos da metade dos dias · Mais da metade dos dias · Quase todos os dias</strong>
+  </div>
+
+  <div id="gad7-items"></div>
+
+  <div class="nav-row">
+    <button class="btn-nav secondary" onclick="prevSection('sec-gad7','sec-phq9')">‹ Voltar</button>
+    <button class="btn-nav" onclick="finalize()">Ver resultado ›</button>
+  </div>
+</div>
+
+<!-- ===================== RESULTADO ===================== -->
+<div id="resultado">
+  <h2>Resultado do Questionário</h2>
+  <p class="subtitle">Para compartilhar com o Dr. Fábio antes ou durante a consulta.</p>
+  <div id="result-cards"></div>
+  <div class="result-disclaimer">
+    <strong>Importante:</strong> Este questionário é uma ferramenta de rastreio e não substitui a avaliação clínica. Os resultados serão interpretados pelo Dr. Fábio junto com todas as outras informações do seu acompanhamento. Nenhuma decisão de diagnóstico ou tratamento é tomada com base neste instrumento de forma isolada.
+  </div>
+  <button class="btn-print" onclick="window.print()">🖨 Imprimir / Salvar PDF</button>
+</div>
+
+<script>
+// ============================================================
+// DADOS DAS ESCALAS
+// ============================================================
+
+const FREQ5 = ['Nunca','Raramente','Às vezes','Frequente','Muito freq.'];
+const FREQ4 = ['Nenhum dia','< metade dos dias','> metade dos dias','Quase todo dia'];
+const WURS_OPTS = ['Nada','Um pouco','Moderada-mente','Bastante','Muito'];
+
+const asrsA = [
+  "Com que frequência você comete erros por falta de atenção nos detalhes, ou deixa passar erros no trabalho ou em outras atividades?",
+  "Com que frequência você tem dificuldade para manter a atenção em tarefas ou atividades de lazer?",
+  "Com que frequência você tem dificuldade para se concentrar no que as pessoas dizem, mesmo quando estão falando diretamente com você?",
+  "Com que frequência você deixa projetos pela metade depois que já passou a parte mais difícil?",
+  "Com que frequência você tem dificuldade para organizar tarefas e atividades?",
+  "Com que frequência você evita ou adia o início de tarefas que exigem muito esforço mental?"
+];
+
+const asrsB = [
+  "Com que frequência você perde coisas necessárias para tarefas ou atividades (chaves, carteira, óculos, documentos)?",
+  "Com que frequência você se distrai com estímulos externos?",
+  "Com que frequência você se esquece de atividades do dia a dia?",
+  "Com que frequência você fica se mexendo na cadeira ou mexendo mãos e pés quando precisa ficar sentado(a) por muito tempo?",
+  "Com que frequência você levanta da cadeira em situações onde deveria ficar sentado(a)?",
+  "Com que frequência você se sente inquieto(a) ou agitado(a) por dentro?",
+  "Com que frequência você tem dificuldade para se divertir ou fazer atividades de lazer com calma e tranquilidade?",
+  "Com que frequência você fala demais em situações sociais?",
+  "Com que frequência, quando está tendo uma conversa, você termina as frases das pessoas antes delas ou diz a resposta antes que a pergunta seja feita?",
+  "Com que frequência você tem dificuldade para esperar sua vez (em filas, conversas, jogos)?",
+  "Com que frequência você interrompe ou se intromete nas atividades dos outros (entra em conversas, jogos, etc.)?"
+];
+
+const wursItems = [
+  "Problemas de concentração, distraí-me facilmente",
+  "Ansioso(a), preocupado(a)",
+  "Dificuldade em concluir projetos",
+  "Nervoso(a), agitado(a), tenso(a)",
+  "Indesejável para outros (escola, família, amigos)",
+  "Explosivo(a), impulsivo(a)",
+  "Problemas em aprender coisas",
+  "Impulsivo(a)",
+  "Dificuldade em seguir instruções",
+  "Frustração fácil, irrito-me com facilidade",
+  "Agitação excessiva, dificuldade em ficar parado(a)",
+  "Briguento(a), discutia muito",
+  "Birra, mau humor",
+  "Dificuldades em relacionamentos com outras crianças",
+  "Desobediente, difícil de controlar",
+  "Notas baixas na escola, mau desempenho escolar",
+  "Pouca autoestima, sentimento de inferioridade",
+  "Hiperativo(a), sempre no movimento",
+  "Irresponsável, imprevisível",
+  "Dificuldade de esperar, sem paciência",
+  "Problemas em completar tarefas escolares",
+  "Dificuldade em manter a atenção durante a leitura",
+  "Dificuldade em aceitar as regras",
+  "Pouca capacidade de planejar com antecedência",
+  "Problemas de comportamento na escola"
+];
+
+const phq9Items = [
+  "Pouco interesse ou pouco prazer em fazer as coisas",
+  "Sentir-se desanimado(a), deprimido(a) ou sem esperança",
+  "Dificuldade para adormecer ou permanecer dormindo, ou dormir mais do que de costume",
+  "Sentir-se cansado(a) ou com pouca energia",
+  "Falta de apetite ou comer em excesso",
+  "Sentir-se mal consigo mesmo(a) — ou achar que é um fracasso ou que decepcionou sua família",
+  "Dificuldade para se concentrar nas coisas, como ler o jornal ou ver televisão",
+  "Mover ou falar tão lentamente que outras pessoas notaram, ou ao contrário, ficar tão agitado(a) que você ficava se mexendo mais do que de costume",
+  "Pensar em se machucar de alguma forma ou que seria melhor estar morto(a)"
+];
+
+const gad7Items = [
+  "Sentir-se nervoso(a), ansioso(a) ou muito tenso(a)",
+  "Não ser capaz de impedir ou controlar as preocupações",
+  "Preocupar-se muito com diversas coisas",
+  "Dificuldade para relaxar",
+  "Ficar tão agitado(a) que fica difícil permanecer sentado(a)",
+  "Ficar facilmente aborrecido(a) ou irritado(a)",
+  "Sentir medo como se algo horrível fosse acontecer"
+];
+
+// ============================================================
+// ESTADO
+// ============================================================
+let answers = {};
+const totalSections = 5;
+const sectionOrder = ['sec-asrs-a','sec-asrs-b','sec-wurs','sec-phq9','sec-gad7'];
+
+// ============================================================
+// RENDER
+// ============================================================
+function renderItems(containerId, items, prefix, opts, vertical) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  items.forEach((text, i) => {
+    const key = prefix + '_' + i;
+    const div = document.createElement('div');
+    div.className = 'item';
+    div.id = 'item_' + key;
+    div.innerHTML = `<div class="item-num">${prefix.toUpperCase().replace('_','-')} · Pergunta ${i+1}</div>
+      <div class="item-text">${text}</div>
+      <div class="${vertical ? 'options-col' : 'options-row'}">
+        ${opts.map((o,v) => `
+          <label>
+            <input type="radio" name="${key}" value="${v}" onchange="recordAnswer('${key}',${v})">
+            <span class="${vertical ? '' : 'opt-btn'}">${o}</span>
+          </label>
+        `).join('')}
+      </div>`;
+    container.appendChild(div);
+  });
+}
+
+function recordAnswer(key, val) {
+  answers[key] = val;
+  const item = document.getElementById('item_' + key);
+  if (item) item.classList.add('answered');
+  updateProgress();
+}
+
+function updateProgress() {
+  const total = asrsA.length + asrsB.length + wursItems.length + phq9Items.length + gad7Items.length;
+  const done = Object.keys(answers).length;
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = done + '/' + total + ' respondidas';
+}
+
+// ============================================================
+// NAVEGAÇÃO
+// ============================================================
+function startQuiz() {
+  document.getElementById('capa').style.display = 'none';
+  document.getElementById('progress-bar-wrap').style.display = 'block';
+  document.getElementById('progress-label').style.display = 'block';
+  document.getElementById('sec-asrs-a').classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function nextSection(from, to) {
+  document.getElementById(from).classList.remove('active');
+  document.getElementById(to).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function prevSection(from, to) {
+  document.getElementById(from).classList.remove('active');
+  document.getElementById(to).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ============================================================
+// SCORING
+// ============================================================
+function scoreASRS() {
+  // Parte A: itens 0-5 (asrsA_0 a asrsA_5)
+  // Positivo: frequentemente(3) ou muito freq.(4)
+  let posA = 0;
+  for (let i = 0; i < 6; i++) {
+    const v = answers['asrsA_' + i];
+    if (v !== undefined && v >= 3) posA++;
+  }
+  // Parte B: 7 itens de desatenção (asrsB_0 a asrsB_6) e 4 de hiperatividade (asrsB_7..10)
+  let posB = 0;
+  for (let i = 0; i < 11; i++) {
+    const v = answers['asrsB_' + i];
+    if (v !== undefined && v >= 3) posB++;
+  }
+  return { posA, posB, total: posA + posB };
+}
+
+function scoreWURS() {
+  let sum = 0;
+  for (let i = 0; i < wursItems.length; i++) {
+    const v = answers['wurs_' + i];
+    if (v !== undefined) sum += v;
+  }
+  return sum;
+}
+
+function scorePHQ9() {
+  let sum = 0;
+  for (let i = 0; i < phq9Items.length; i++) {
+    const v = answers['phq9_' + i];
+    if (v !== undefined) sum += v;
+  }
+  return sum;
+}
+
+function scoreGAD7() {
+  let sum = 0;
+  for (let i = 0; i < gad7Items.length; i++) {
+    const v = answers['gad7_' + i];
+    if (v !== undefined) sum += v;
+  }
+  return sum;
+}
+
+// ============================================================
+// RESULTADO
+// ============================================================
+function finalize() {
+  sectionOrder.forEach(s => document.getElementById(s).classList.remove('active'));
+
+  const asrs = scoreASRS();
+  const wurs = scoreWURS();
+  const phq = scorePHQ9();
+  const gad = scoreGAD7();
+
+  // Interpretações
+  const asrsLevel = asrs.posA >= 4 ? 'vermelho' : asrs.posA >= 2 ? 'amarelo' : 'verde';
+  const asrsInterp = asrs.posA >= 4
+    ? `<strong>Rastreio positivo</strong> para TDAH (${asrs.posA}/6 positivos na Parte A). Critério ≥4 atingido. A Parte B reforça o perfil com mais ${asrs.posB} itens positivos.`
+    : asrs.posA >= 2
+    ? `Rastreio intermediário (${asrs.posA}/6 positivos na Parte A). Abaixo do corte formal, mas Parte B indica ${asrs.posB} itens adicionais — avaliar clinicamente.`
+    : `Rastreio negativo na Parte A (${asrs.posA}/6 positivos). Avaliar junto com história clínica e WURS.`;
+
+  const wursLevel = wurs >= 46 ? 'vermelho' : wurs >= 30 ? 'amarelo' : 'verde';
+  const wursInterp = wurs >= 46
+    ? `<strong>Pontuação sugestiva de TDAH com início na infância</strong> (${wurs}/100 pontos). Ponto de corte ≥46 atingido. Consistente com sintomas presentes desde a infância.`
+    : wurs >= 30
+    ? `Pontuação intermediária (${wurs}/100). Abaixo do corte formal, mas clinicamente relevante — integrar com anamnese retroativa.`
+    : `Pontuação abaixo do corte (${wurs}/100). Retrospecção de infância não sugestiva de TDAH formal — avaliar contexto.`;
+
+  const phqLevel = phq >= 15 ? 'vermelho' : phq >= 10 ? 'amarelo' : phq >= 5 ? 'amarelo' : 'verde';
+  const phqInterp = phq >= 20
+    ? `<strong>Depressão grave</strong> (${phq}/27). Avaliação e manejo urgentes.`
+    : phq >= 15
+    ? `<strong>Depressão moderadamente grave</strong> (${phq}/27). Indicação formal de tratamento.`
+    : phq >= 10
+    ? `<strong>Depressão moderada</strong> (${phq}/27). Clinicamente significativa.`
+    : phq >= 5
+    ? `Sintomas depressivos leves (${phq}/27). Monitorar.`
+    : `Sem sintomas depressivos significativos (${phq}/27).`;
+
+  const gadLevel = gad >= 15 ? 'vermelho' : gad >= 10 ? 'amarelo' : gad >= 5 ? 'amarelo' : 'verde';
+  const gadInterp = gad >= 15
+    ? `<strong>Ansiedade grave</strong> (${gad}/21). Avaliação e manejo indicados.`
+    : gad >= 10
+    ? `<strong>Ansiedade moderada</strong> (${gad}/21). Clinicamente significativa.`
+    : gad >= 5
+    ? `Ansiedade leve (${gad}/21). Monitorar.`
+    : `Sem ansiedade significativa (${gad}/21).`;
+
+  // Suicídio (item 9 do PHQ-9)
+  const phq9q9 = answers['phq9_8'];
+  let alertaSuicidio = '';
+  if (phq9q9 !== undefined && phq9q9 >= 1) {
+    alertaSuicidio = `<div class="result-card vermelho" style="margin-top:16px">
+      <div class="rc-header">
+        <div class="rc-title">⚠️ Alerta — Ideação Suicida</div>
+        <span class="rc-badge">Atenção imediata</span>
+      </div>
+      <div class="rc-interp">A última pergunta do PHQ-9 foi respondida com frequência ≥1. Este item deve ser avaliado pessoalmente pelo Dr. Fábio na consulta, independentemente dos outros resultados.</div>
+    </div>`;
+  }
+
+  const now = new Date().toLocaleDateString('pt-BR');
+
+  document.getElementById('result-cards').innerHTML = `
+    <p style="font-size:0.8rem;color:#aaa;margin-bottom:20px">Data de resposta: ${now}</p>
+
+    <div class="result-card ${asrsLevel}">
+      <div class="rc-header">
+        <div class="rc-title">ASRS v1.1 — Rastreio de TDAH (hoje)</div>
+        <div><span class="rc-score">${asrs.posA}<small style="font-size:0.85rem;color:#888">/6</small></span>
+        <span class="rc-badge">${asrs.posA >= 4 ? 'Rastreio +' : asrs.posA >= 2 ? 'Intermediário' : 'Rastreio −'}</span></div>
+      </div>
+      <div class="rc-interp">${asrsInterp}<br><small style="color:#aaa">Parte B: ${asrs.posB}/11 itens positivos</small></div>
+    </div>
+
+    <div class="result-card ${wursLevel}">
+      <div class="rc-header">
+        <div class="rc-title">WURS-25 — Sintomas na Infância</div>
+        <div><span class="rc-score">${wurs}<small style="font-size:0.85rem;color:#888">/100</small></span>
+        <span class="rc-badge">${wurs >= 46 ? 'Corte atingido' : wurs >= 30 ? 'Intermediário' : 'Abaixo do corte'}</span></div>
+      </div>
+      <div class="rc-interp">${wursInterp}</div>
+    </div>
+
+    <div class="result-card ${phqLevel}">
+      <div class="rc-header">
+        <div class="rc-title">PHQ-9 — Sintomas Depressivos</div>
+        <div><span class="rc-score">${phq}<small style="font-size:0.85rem;color:#888">/27</small></span>
+        <span class="rc-badge">${phq >= 15 ? 'Mod. grave–grave' : phq >= 10 ? 'Moderado' : phq >= 5 ? 'Leve' : 'Mínimo'}</span></div>
+      </div>
+      <div class="rc-interp">${phqInterp}</div>
+    </div>
+
+    <div class="result-card ${gadLevel}">
+      <div class="rc-header">
+        <div class="rc-title">GAD-7 — Sintomas Ansiosos</div>
+        <div><span class="rc-score">${gad}<small style="font-size:0.85rem;color:#888">/21</small></span>
+        <span class="rc-badge">${gad >= 15 ? 'Grave' : gad >= 10 ? 'Moderado' : gad >= 5 ? 'Leve' : 'Mínimo'}</span></div>
+      </div>
+      <div class="rc-interp">${gadInterp}</div>
+    </div>
+
+    ${alertaSuicidio}
+  `;
+
+  document.getElementById('resultado').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.onload = function() {
+  renderItems('asrs-items-a', asrsA, 'asrsA', FREQ5, false);
+  renderItems('asrs-items-b', asrsB, 'asrsB', FREQ5, false);
+  renderItems('wurs-items',   wursItems, 'wurs', WURS_OPTS, true);
+  renderItems('phq9-items',   phq9Items, 'phq9', FREQ4, false);
+  renderItems('gad7-items',   gad7Items, 'gad7', FREQ4, false);
+};
+</script>
+</body>
+</html>
